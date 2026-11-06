@@ -10,7 +10,8 @@
   <header>
     <div class="brand"><span class="dot"></span> CHESS<span class="thin">OVERLAY</span></div>
     <div class="seg" id="srcSeg">
-      <button data-src="iframe" class="on">EMBED</button>
+      <button data-src="live" class="on">LIVE</button>
+      <button data-src="page">PAGE</button>
       <button data-src="capture">CAPTURE</button>
       <button data-src="off">NONE</button>
     </div>
@@ -24,13 +25,14 @@
   <main>
     <section id="stageWrap">
       <div id="stage">
-        <iframe id="frame" src="https://www.chess.com/play/computer" allow="clipboard-write; fullscreen" style="display: block;"></iframe>
+        <iframe id="frame" allow="clipboard-write; fullscreen" style="display: block;"></iframe>
         <video id="vid" playsinline="" muted=""></video>
         <canvas id="ov"></canvas>
         <div id="hint">
           <div class="hintIn">
-            <h2>No board source</h2>
-            <p>Use EMBED, or CAPTURE to share a chess.com tab. If the embed is blank, chess.com blocked the frame — use CAPTURE.</p>
+            <h2>PASTE YOUR GAME LINK</h2>
+            <p>Copy the URL of the game you're playing — the one with <b>/game/live/</b> and a long number — into the LIVE GAME box on the right.</p>
+            <p class="sm">The board embeds here as a live spectator view. You keep playing in your own chess.com tab.</p>
           </div>
         </div>
       </div>
@@ -39,7 +41,7 @@
     <aside class="panel">
       <div class="sect">
         <div class="sectH">ENGINE</div>
-        <div class="row"><label>Depth</label><input type="range" id="depth" min="6" max="26" value="16"><output id="depthV">22</output></div>
+        <div class="row"><label>Depth</label><input type="range" id="depth" min="6" max="26" value="16"><output id="depthV">16</output></div>
         <div class="row"><label>Lines</label><input type="range" id="mpv" min="1" max="3" value="1"><output id="mpvV">1</output></div>
         <div class="evalbar"><div id="evalfill"></div><div id="evalmark"></div></div>
         <div class="evaltxt"><span id="evalTxt">—</span><span id="turnTxt">white to move</span></div>
@@ -48,39 +50,40 @@
       </div>
 
       <div class="sect">
-        <div class="sectH">POSITION</div>
+        <div class="sectH">LIVE GAME</div>
+        <input id="gameInput" placeholder="paste game URL or game ID" autocomplete="off" spellcheck="false">
+        <div class="row gap"><button class="btn" id="btnEmbed">EMBED GAME</button><button class="btn ghost" id="btnPlay">PLAY TAB</button></div>
+        <div class="row"><label>Sync</label><span class="switch"><input type="checkbox" id="liveSync" checked=""><i></i></span></div>
+        <div id="liveStat" class="stat">no game loaded</div>
+        <div class="note">Reads the position straight from chess.com's game feed, so the arrow follows your game move by move. Spectator view only — moves are made in your own tab.</div>
+      </div>
+
+      <div class="sect">
+        <div class="sectH">POSITION <span class="mini">manual</span></div>
         <div id="moves" class="moves"><span class="dimtxt">no moves</span></div>
         <input id="mvInput" placeholder="type a move (e4, Nf3, e2e4) · Enter · Backspace = undo" autocomplete="off" spellcheck="false">
         <div class="row gap">
           <button class="btn ghost" id="btnUndo">UNDO</button>
-          <button class="btn ghost" id="btnFlip">FLIP</button>
+          <button class="btn ghost" id="btnOrient">ORIENT</button>
           <button class="btn ghost" id="btnReset">RESET</button>
         </div>
         <input id="fenInput" placeholder="paste FEN or PGN" autocomplete="off" spellcheck="false">
       </div>
 
       <div class="sect">
-        <div class="sectH">SYNC</div>
-        <div class="row"><label>Auto</label><span class="switch"><input type="checkbox" id="autoPoll"><i></i></span></div>
-        <div class="row gap"><input id="userInput" placeholder="chess.com username"><button class="btn ghost" id="btnPoll">SYNC</button></div>
-        <div class="note">Auto mode polls the public chess.com API. It can lag a few seconds — manual entry is instant.</div>
-      </div>
-
-      <div class="sect">
         <div class="sectH">ALIGN BOARD</div>
-        <div class="row"><label>Left</label><input type="range" id="calX" min="0" max="90" value="16"><output id="calXV">16</output></div>
-        <div class="row"><label>Top</label><input type="range" id="calY" min="0" max="90" value="12"><output id="calYV">58</output></div>
-        <div class="row"><label>Size</label><input type="range" id="calS" min="20" max="100" value="68"><output id="calSV">68</output></div>
+        <div class="row"><label>Left</label><input type="range" id="calX" min="0" max="90" value="6"><output id="calXV">6</output></div>
+        <div class="row"><label>Top</label><input type="range" id="calY" min="0" max="90" value="10"><output id="calYV">10</output></div>
+        <div class="row"><label>Size</label><input type="range" id="calS" min="20" max="100" value="62"><output id="calSV">62</output></div>
         <div class="row"><label>Outline</label><span class="switch"><input type="checkbox" id="outline" checked=""><i></i></span></div>
-        <div class="note">Drag until the dashed box sits exactly on the board. Recalibrate after resizing the window.</div>
+        <div class="note">Drag until the dashed box sits exactly on the embedded board. Saved automatically.</div>
       </div>
 
       <div class="sect">
-        <div class="sectH">SOURCE</div>
+        <div class="sectH">PAGE SOURCE</div>
         <input id="urlInput" value="https://www.chess.com/play/computer" autocomplete="off" spellcheck="false">
         <div class="row gap"><button class="btn ghost" id="btnLoad">LOAD</button><button class="btn ghost" id="btnTab">NEW TAB</button></div>
-        <button class="btn wide" id="btnCap">SHARE CHESS.COM TAB</button>
-        <div class="note">DOWNLOAD opens a clean tab that saves the file itself — the preview frame here can't download directly.</div>
+        <button class="btn wide" id="btnCap">SHARE A TAB INSTEAD</button>
       </div>
     </aside>
   </main>
@@ -104,20 +107,21 @@
 const $ = s => document.querySelector(s);
 const stage = $('#stage'), frame = $('#frame'), vid = $('#vid'), ov = $('#ov'), ctx = ov.getContext('2d');
 let chess = new Chess();
-let flipped = false, srcMode = 'iframe', cal = {x:16, y:12, s:68}, outlineOn = true;
+let flipped = false, srcMode = 'live', cal = {x:6, y:10, s:62}, outlineOn = true;
 let depth = 16, multipv = 1, engineReady = false, wantAnalyze = false, gen = 0;
-let pvLines = {}, pollTimer = null, username = '';
+let pvLines = {}, pollTimer = null, username = '', gameId = '', lastPly = -1, gameOver = false;
 
 /* ---------- persistence ---------- */
-const SAVE = 'chessoverlay.v1';
+const SAVE = 'chessoverlay.v2';
 function loadCfg(){ try{ const c = JSON.parse(localStorage.getItem(SAVE)||'{}');
   if(c.cal) cal = c.cal; if(typeof c.depth==='number') depth=c.depth; if(typeof c.multipv==='number') multipv=c.multipv;
-  if(typeof c.outlineOn==='boolean') outlineOn=c.outlineOn; if(c.url) $('#urlInput').value=c.url; if(c.user) username=c.user;
+  if(typeof c.outlineOn==='boolean') outlineOn=c.outlineOn; if(c.url) $('#urlInput').value=c.url;
+  if(c.user) username=c.user; if(c.game) $('#gameInput').value=c.game; if(typeof c.flipped==='boolean') flipped=c.flipped;
 }catch(e){} }
-function saveCfg(){ try{ localStorage.setItem(SAVE, JSON.stringify({cal,depth,multipv,outlineOn,url:$('#urlInput').value,user:$('#userInput').value})); }catch(e){} }
+function saveCfg(){ try{ localStorage.setItem(SAVE, JSON.stringify({cal,depth,multipv,outlineOn,url:$('#urlInput').value,user:$('#userInput')?$('#userInput').value:'',game:$('#gameInput').value,flipped})); }catch(e){} }
 loadCfg();
 $('#calX').value=cal.x; $('#calY').value=cal.y; $('#calS').value=cal.s;
-$('#depth').value=depth; $('#mpv').value=multipv; $('#outline').checked=outlineOn; $('#userInput').value=username;
+$('#depth').value=depth; $('#mpv').value=multipv; $('#outline').checked=outlineOn;
 $('#depthV').textContent=depth; $('#mpvV').textContent=multipv;
 $('#calXV').textContent=cal.x; $('#calYV').textContent=cal.y; $('#calSV').textContent=cal.s;
 
@@ -152,10 +156,6 @@ function onLine(e){
   if(line.indexOf('uciok')===0){ pill('ready','ok'); engineReady=true; engine.postMessage('isready'); if(wantAnalyze) analyze(); return; }
   if(line.indexOf('readyok')===0){ if(!engineReady){ engineReady=true; pill('ready','ok'); } return; }
   if(line.indexOf('info')===0 && line.indexOf(' pv ') > -1) parseInfo(line);
-  if(line.indexOf('bestmove')===0){
-    const mv = line.split(/\s+/)[1];
-    if(mv && mv !== '(none)' && wantAnalyze) render();
-  }
 }
 
 function parseInfo(line){
@@ -250,6 +250,31 @@ function drawArrow(a, b, r, color, main){
   ctx.restore();
 }
 
+/* ---------- TCN decode ---------- */
+const TCN = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?{~}(^)[_]@#$,./&-*++=";
+function decodeTCN(s){
+  const out = [];
+  for(let i=0; i+1 < s.length; i += 2){
+    let b = TCN.indexOf(s[i]), a = TCN.indexOf(s[i+1]);
+    if(b < 0 || a < 0) break;
+    const d = {};
+    if(a > 63){ d.promotion = "qnrbkp"[Math.floor((a-64)/3)]; a = b + (b < 16 ? -8 : 8) + (a-1) % 3 - 1; }
+    if(b > 75){ d.drop = "qnrbkp"[b-79]; }
+    else d.from = TCN[b % 8] + (Math.floor(b/8) + 1);
+    d.to = TCN[a % 8] + (Math.floor(a/8) + 1);
+    out.push(d);
+  }
+  return out;
+}
+function buildFrom(list){
+  const c = new Chess();
+  for(const m of list){
+    if(m.drop) continue;
+    try{ if(!c.move({ from:m.from, to:m.to, promotion:m.promotion || undefined })) break; }catch(e){ break; }
+  }
+  return c;
+}
+
 /* ---------- panel ---------- */
 function uciToSan(fen, ucis){
   const c = new Chess(fen), out = [];
@@ -272,7 +297,7 @@ function updateEval(){
   $('#evalmark').style.left = pct+'%';
   $('#evalTxt').textContent = txt;
   $('#evalTxt').style.color = cp>40 ? '#6ee7a8' : cp<-40 ? '#f87171' : '#dbe6f0';
-  $('#turnTxt').textContent = chess.game_over() ? 'game over' : (turn==='w'?'white to move':'black to move');
+  $('#turnTxt').textContent = gameOver ? 'game over' : (turn==='w'?'white to move':'black to move');
   const san = p && p.pv.length ? uciToSan(chess.fen(), p.pv) : [];
   $('#line').textContent = san.length ? san.join(' ') : '—';
 }
@@ -285,7 +310,7 @@ function updateMoves(){
 }
 function afterChange(){ updateMoves(); updateEval(); if(wantAnalyze) analyze(); else render(); }
 
-/* ---------- moves ---------- */
+/* ---------- manual moves ---------- */
 function applyToken(tok){
   const t = tok.trim(); if(!t) return;
   if(t.includes('/') && t.includes(' ')){ loadFen(t); return; }
@@ -312,13 +337,74 @@ function loadPgn(pgn){
   let n=0;
   for(const t of toks){ try{ if(!c.move(t.replace(/[!?]/g,''))) break; n++; }catch(e){ break; } }
   if(!n) return false;
-  const wm = /\[White "([^"]+)"\]/i.exec(pgn), bm = /\[Black "([^"]+)"\]/i.exec(pgn);
-  if(username && wm && wm[1].toLowerCase()===username.toLowerCase()) flipped=false;
-  else if(username && bm && bm[1].toLowerCase()===username.toLowerCase()) flipped=true;
   chess = c; lastFen=''; afterChange(); return true;
 }
 
+/* ---------- live game ---------- */
+function stat(msg, cls){ const s = $('#liveStat'); s.textContent = msg; s.className = 'stat' + (cls?' '+cls:''); }
+function parseGameId(v){ const m = /(\d{6,})/.exec(v || ''); return m ? m[1] : ''; }
+
+function embedGame(){
+  const id = parseGameId($('#gameInput').value);
+  if(!id){ stat('paste a game link first','bad'); return; }
+  gameId = id; lastPly = -1; gameOver = false;
+  saveCfg();
+  frame.src = 'https://www.chess.com/emboard?id=' + id;
+  document.querySelectorAll('#srcSeg button').forEach(x=>x.classList.remove('on'));
+  document.querySelector('[data-src="live"]').classList.add('on');
+  setMode('live');
+  stat('embedding game ' + id, 'ok');
+  if($('#liveSync').checked) startLive();
+}
+
+async function fetchGame(id){
+  const url = 'https://www.chess.com/callback/live/game/' + id + '?t=' + Date.now();
+  try{ const r = await fetch(url, {cache:'no-store'}); if(r.ok) return await r.json(); }catch(e){}
+  try{
+    const r2 = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+    if(r2.ok) return await r2.json();
+  }catch(e){}
+  return null;
+}
+
+async function livePoll(){
+  if(!gameId) return;
+  const j = await fetchGame(gameId);
+  if(!j || !j.game){ stat('feed blocked — enter moves manually','bad'); return; }
+  const g = j.game;
+  if(typeof g.plyCount === 'number' && g.plyCount === lastPly){
+    if(g.isFinished) stat('game finished','warn');
+    return;
+  }
+  lastPly = g.plyCount || 0;
+  gameOver = !!g.isFinished;
+  const moves = decodeTCN(g.moveList || '');
+  chess = buildFrom(moves);
+  lastFen = '';
+  afterChange();
+  const w = (g.pgnHeaders && g.pgnHeaders.White) || '?';
+  const b = (g.pgnHeaders && g.pgnHeaders.Black) || '?';
+  const mine = username && (w.toLowerCase() === username.toLowerCase() ? 'White'
+             : b.toLowerCase() === username.toLowerCase() ? 'Black' : '');
+  stat('live · ply ' + lastPly + ' · ' + w + ' vs ' + b + (mine ? ' · you are ' + mine : ''), 'ok');
+  if(g.isFinished) stat('game finished · ' + w + ' vs ' + b, 'warn');
+}
+function startLive(){
+  clearInterval(pollTimer);
+  if(!gameId) return;
+  livePoll();
+  pollTimer = setInterval(livePoll, 1500);
+}
+
 /* ---------- UI wiring ---------- */
+$('#gameInput').oninput = e=>{ gameId = parseGameId(e.target.value); saveCfg(); };
+$('#btnEmbed').onclick = embedGame;
+$('#btnPlay').onclick = ()=>{
+  const id = parseGameId($('#gameInput').value);
+  window.open(id ? 'https://www.chess.com/game/live/' + id : $('#urlInput').value.trim(), '_blank');
+};
+$('#liveSync').onchange = e=>{ e.target.checked ? startLive() : (clearInterval(pollTimer), stat('sync off')); saveCfg(); };
+
 $('#mvInput').addEventListener('keydown', e=>{
   if(e.key==='Enter'){ const v=e.target.value; e.target.value=''; v.split(/[,\s]+/).forEach(applyToken); afterChange(); }
   if(e.key==='Backspace' && !e.target.value){ chess.undo(); afterChange(); }
@@ -329,8 +415,8 @@ $('#fenInput').addEventListener('keydown', e=>{
   if(!loadPgn(v)) loadFen(v);
 });
 $('#btnUndo').onclick = ()=>{ chess.undo(); afterChange(); };
-$('#btnReset').onclick = ()=>{ chess = new Chess(); lastFen=''; afterChange(); };
-$('#btnFlip').onclick = ()=>{ flipped = !flipped; render(); };
+$('#btnReset').onclick = ()=>{ chess = new Chess(); lastFen=''; gameOver=false; afterChange(); };
+$('#btnOrient').onclick = ()=>{ flipped = !flipped; saveCfg(); render(); };
 $('#btnOn').onclick = ()=>{ wantAnalyze=true; analyze(); };
 $('#btnOff').onclick = stopEngine;
 $('#btnCal').onclick = ()=>{ outlineOn = !outlineOn; $('#outline').checked = outlineOn; render(); };
@@ -346,7 +432,9 @@ $('#mpv').oninput = e=>{ multipv=+e.target.value; $('#mpvV').textContent=multipv
 });
 $('#outline').onchange = e=>{ outlineOn = e.target.checked; saveCfg(); render(); };
 
-$('#btnLoad').onclick = ()=>{ frame.src = $('#urlInput').value.trim(); saveCfg(); };
+$('#btnLoad').onclick = ()=>{ frame.src = $('#urlInput').value.trim(); saveCfg();
+  document.querySelectorAll('#srcSeg button').forEach(x=>x.classList.remove('on'));
+  document.querySelector('[data-src="page"]').classList.add('on'); setMode('page'); };
 $('#btnTab').onclick = ()=> window.open($('#urlInput').value.trim(), '_blank');
 $('#urlInput').onchange = saveCfg;
 
@@ -358,9 +446,10 @@ document.querySelectorAll('#srcSeg button').forEach(b=>{
 });
 function setMode(m){
   srcMode = m;
-  frame.style.display = m==='iframe' ? 'block' : 'none';
+  frame.style.display = (m==='live' || m==='page') ? 'block' : 'none';
   vid.style.display = m==='capture' ? 'block' : 'none';
-  $('#hint').style.display = (m==='off' || (m==='capture' && !vid.srcObject)) ? 'grid' : 'none';
+  const empty = (m==='off') || (m==='capture' && !vid.srcObject) || (m==='live' && !gameId);
+  $('#hint').style.display = empty ? 'grid' : 'none';
   resizeOv();
 }
 $('#btnCap').onclick = async ()=>{
@@ -374,24 +463,6 @@ $('#btnCap').onclick = async ()=>{
     s.getVideoTracks()[0].onended = ()=> setMode('off');
   }catch(e){ pill('capture denied','warn'); }
 };
-
-/* ---------- auto sync ---------- */
-$('#userInput').oninput = e=>{ username = e.target.value.trim(); saveCfg(); };
-$('#autoPoll').onchange = e=>{ e.target.checked ? startPoll() : (clearInterval(pollTimer), pollTimer=null); };
-$('#btnPoll').onclick = pollOnce;
-function startPoll(){ clearInterval(pollTimer); pollOnce(); pollTimer = setInterval(pollOnce, 4000); }
-async function pollOnce(){
-  if(!username) return;
-  try{
-    const r = await fetch('https://api.chess.com/pub/player/'+encodeURIComponent(username.toLowerCase())+'/games');
-    if(!r.ok){ pill('sync '+r.status,'warn'); return; }
-    const j = await r.json();
-    const games = (j.games||[]).filter(g=>g.pgn).sort((a,b)=>(a.end_time||1e12)-(b.end_time||1e12));
-    if(!games.length){ pill('no games','warn'); return; }
-    const g = games[games.length-1];
-    if(loadPgn(g.pgn)){ pill('synced','ok'); $('#hint').style.display='none'; }
-  }catch(e){ pill('sync error','bad'); }
-}
 
 /* ---------- export ---------- */
 function toast(msg){
@@ -408,6 +479,9 @@ function buildFile(){
   q('#line').textContent = '—';
   q('#evalfill').removeAttribute('style');
   q('#evalmark').removeAttribute('style');
+  q('#liveStat').textContent = 'no game loaded';
+  q('#liveStat').className = 'stat';
+  q('#frame').removeAttribute('src');
   c.querySelectorAll('#srcSeg button').forEach((b,i)=>b.classList.toggle('on', i===0));
   q('#srcModal').classList.remove('open');
   q('#smText').value = '';
@@ -417,13 +491,11 @@ function buildFile(){
     + '<title>Chess Overlay</title>\n</head>\n'
     + '<body style="margin:0;background:#080b0e">\n' + c.innerHTML + '\n</body>\n</html>';
 }
-
 const DL_SCRIPT =
 "(function(){var b=new Blob([window.__SRC],{type:'text/html;charset=utf-8'});" +
 "var a=document.createElement('a');a.href=URL.createObjectURL(b);" +
 "a.download='chess-overlay.html';document.body.appendChild(a);a.click();" +
 "setTimeout(function(){a.remove();},2000);})();";
-
 function directSave(html){
   const blob = new Blob([html], {type:'text/html;charset=utf-8'});
   const a = document.createElement('a');
@@ -432,8 +504,6 @@ function directSave(html){
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
 }
-
-/* primary: hand the payload to a top-level tab, which saves it itself */
 $('#btnDl').onclick = ()=>{
   const html = buildFile();
   let w = null;
@@ -451,9 +521,8 @@ $('#btnDl').onclick = ()=>{
     }catch(e){ try{ w.close(); }catch(_){} }
   }
   try{ directSave(html); toast('saved — if nothing appeared, popups are blocked'); }
-  catch(e){ showSource(); toast('download blocked — use DIRECT SAVE in the source view'); }
+  catch(e){ showSource(); toast('download blocked — use DIRECT SAVE'); }
 };
-
 $('#btnSrc').onclick = showSource;
 function showSource(){
   const ta = $('#smText');
@@ -461,10 +530,7 @@ function showSource(){
   $('#srcModal').classList.add('open');
 }
 $('#smClose').onclick = ()=> $('#srcModal').classList.remove('open');
-$('#smSave').onclick = ()=>{
-  try{ directSave($('#smText').value || buildFile()); toast('saved — if nothing appeared, use COPY'); }
-  catch(e){ toast('blocked — use COPY'); }
-};
+$('#smSave').onclick = ()=>{ try{ directSave($('#smText').value || buildFile()); toast('saved'); }catch(e){ toast('blocked — use COPY'); } };
 $('#smCopy').onclick = async ()=>{
   const ta = $('#smText');
   try{ await navigator.clipboard.writeText(ta.value); toast('copied'); }
@@ -474,11 +540,9 @@ $('#smCopy').onclick = async ()=>{
 /* ---------- boot ---------- */
 new ResizeObserver(resizeOv).observe(stage);
 window.addEventListener('resize', resizeOv);
-setMode('iframe');
-resizeOv();
-updateMoves(); updateEval();
+resizeOv(); updateMoves(); updateEval();
+if($('#gameInput').value) embedGame(); else setMode('live');
 startEngine();
-if($('#autoPoll').checked) startPoll();
 </script>
 
 <style>
@@ -506,12 +570,15 @@ main{flex:1;display:grid;grid-template-columns:1fr 372px;min-height:0}
 #vid{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:none;background:#000}
 #ov{position:absolute;inset:0;pointer-events:none;z-index:5}
 #hint{position:absolute;inset:0;display:none;place-items:center;text-align:center;padding:24px;z-index:4;pointer-events:none}
-#hint h2{font-size:14px;letter-spacing:2px;margin-bottom:8px;color:#fff}
-#hint p{color:var(--dim);max-width:340px;font-size:11.5px}
+#hint h2{font-size:13px;letter-spacing:2.5px;margin-bottom:10px;color:#fff}
+#hint p{color:var(--dim);max-width:360px;font-size:11.5px;margin-bottom:7px}
+#hint p.sm{color:#4d5a66;font-size:10.5px}
+#hint b{color:var(--acc);font-weight:400}
 .panel{border-left:1px solid var(--ln);background:var(--pnl);overflow-y:auto;padding:12px}
 .sect{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #131b24}
 .sect:last-child{border:0}
-.sectH{font-size:9.5px;letter-spacing:2px;color:var(--dim);margin-bottom:9px}
+.sectH{font-size:9.5px;letter-spacing:2px;color:var(--dim);margin-bottom:9px;display:flex;justify-content:space-between}
+.mini{color:#3f4c58;letter-spacing:1px}
 .row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .row.gap{gap:6px}
 .row label{font-size:10.5px;color:var(--dim);width:44px;flex:none}
@@ -529,6 +596,11 @@ input.bad{border-color:#f87171;animation:sh .3s}
 .btn.ghost{background:transparent;border:1px solid var(--ln);color:var(--txt);font-weight:400}
 .btn.ghost:hover{border-color:#37505f;color:#fff}
 .btn.wide{width:100%}
+.stat{font-size:10.5px;color:var(--dim);background:#0a0f14;border:1px solid #131b24;border-radius:6px;
+  padding:6px 9px;margin-bottom:7px;word-break:break-word}
+.stat.ok{color:var(--acc);border-color:#1a3527}
+.stat.warn{color:#fbbf24;border-color:#3d3216}
+.stat.bad{color:#f87171;border-color:#3d1b1b}
 .switch{position:relative;width:34px;height:18px;flex:none}
 .switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:2}
 .switch i{position:absolute;inset:0;background:#1e2833;border-radius:20px;transition:.15s}
